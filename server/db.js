@@ -69,20 +69,38 @@ CREATE TABLE IF NOT EXISTS user_state (
   sessions INTEGER NOT NULL DEFAULT 0,
   updatedAt TEXT
 );
+
+CREATE TABLE IF NOT EXISTS session_log (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  userId TEXT NOT NULL REFERENCES user(id) ON DELETE CASCADE,
+  count INTEGER NOT NULL,
+  goal INTEGER NOT NULL,
+  elapsedMs INTEGER NOT NULL,
+  price REAL NOT NULL DEFAULT 0,
+  finishedAt TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_session_log_user ON session_log(userId, finishedAt);
 `);
 
+// Migration for databases created before the ad libitum feature.
+try {
+  db.exec("ALTER TABLE user_state ADD COLUMN price REAL NOT NULL DEFAULT 0");
+} catch {
+  /* column already exists */
+}
+
 const emptyState = () => ({
-  session: { count: 0, goal: 20, elapsedMs: 0 },
+  session: { count: 0, goal: 20, elapsedMs: 0, price: 0 },
   allTime: { total: 0, bestSession: 0, sessions: 0 },
 });
 
 export function getState(userId) {
   const row = db
-    .prepare("SELECT count, goal, elapsedMs, total, bestSession, sessions FROM user_state WHERE userId = ?")
+    .prepare("SELECT count, goal, elapsedMs, price, total, bestSession, sessions FROM user_state WHERE userId = ?")
     .get(userId);
   if (!row) return emptyState();
   return {
-    session: { count: row.count, goal: row.goal, elapsedMs: row.elapsedMs },
+    session: { count: row.count, goal: row.goal, elapsedMs: row.elapsedMs, price: row.price },
     allTime: { total: row.total, bestSession: row.bestSession, sessions: row.sessions },
   };
 }
@@ -92,25 +110,71 @@ const clampInt = (v, min, max, fallback) => {
   return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : fallback;
 };
 
-export function saveState(userId, body) {
+const clampPrice = (v) => {
+  const n = Number(v);
+  return Number.isFinite(n) ? Math.min(1e7, Math.max(0, Math.round(n * 100) / 100)) : 0;
+};
+
+function normalize(body) {
   const s = body?.session ?? {};
   const a = body?.allTime ?? {};
-  const state = {
+  return {
     count: clampInt(s.count, 0, 1e9, 0),
     goal: clampInt(s.goal, 1, 999, 20),
     elapsedMs: clampInt(s.elapsedMs, 0, 1e12, 0),
+    price: clampPrice(s.price),
     total: clampInt(a.total, 0, 1e9, 0),
     bestSession: clampInt(a.bestSession, 0, 1e9, 0),
     sessions: clampInt(a.sessions, 0, 1e9, 0),
   };
-  db.prepare(`
-    INSERT INTO user_state (userId, count, goal, elapsedMs, total, bestSession, sessions, updatedAt)
-    VALUES (@userId, @count, @goal, @elapsedMs, @total, @bestSession, @sessions, @updatedAt)
-    ON CONFLICT(userId) DO UPDATE SET
-      count = @count, goal = @goal, elapsedMs = @elapsedMs,
-      total = @total, bestSession = @bestSession, sessions = @sessions, updatedAt = @updatedAt
-  `).run({ userId, ...state, updatedAt: new Date().toISOString() });
+}
+
+const upsertState = db.prepare(`
+  INSERT INTO user_state (userId, count, goal, elapsedMs, price, total, bestSession, sessions, updatedAt)
+  VALUES (@userId, @count, @goal, @elapsedMs, @price, @total, @bestSession, @sessions, @updatedAt)
+  ON CONFLICT(userId) DO UPDATE SET
+    count = @count, goal = @goal, elapsedMs = @elapsedMs, price = @price,
+    total = @total, bestSession = @bestSession, sessions = @sessions, updatedAt = @updatedAt
+`);
+
+export function saveState(userId, body) {
+  upsertState.run({ userId, ...normalize(body), updatedAt: new Date().toISOString() });
   return getState(userId);
+}
+
+// Finish the current session: log it, bump the session counters, and reset
+// the live session (goal is kept, price starts fresh). Atomic.
+export const finishSession = db.transaction((userId, body) => {
+  const st = normalize(body);
+  const now = new Date().toISOString();
+  const hasData = st.count > 0 || st.elapsedMs > 0;
+  if (hasData) {
+    db.prepare(`
+      INSERT INTO session_log (userId, count, goal, elapsedMs, price, finishedAt)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `).run(userId, st.count, st.goal, st.elapsedMs, st.price, now);
+    st.sessions += 1;
+    st.bestSession = Math.max(st.bestSession, st.count);
+  }
+  upsertState.run({
+    userId,
+    ...st,
+    count: 0,
+    elapsedMs: 0,
+    price: 0,
+    updatedAt: now,
+  });
+  return getState(userId);
+});
+
+export function listSessions(userId) {
+  return db
+    .prepare(`
+      SELECT id, count, goal, elapsedMs, price, finishedAt
+      FROM session_log WHERE userId = ?
+      ORDER BY finishedAt DESC, id DESC
+    `)
+    .all(userId);
 }
 
 export function adminListUsers() {

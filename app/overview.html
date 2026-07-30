@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Overview · Sushi Counter 📅</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📅</text></svg>" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app app--wide">
+    <header class="header">
+      <h1>📅 Overview</h1>
+      <p class="tagline">your sushi journey</p>
+      <div class="user-bar">
+        <a class="chip-link" href="index.html">← back to counting</a>
+      </div>
+    </header>
+
+    <section class="card">
+      <div class="card-title">
+        <span>🗓️ Sushi days</span>
+        <span class="goal-status">last 12 weeks</span>
+      </div>
+      <div class="heatmap-wrap">
+        <div id="heatmap" class="heatmap"></div>
+      </div>
+      <div class="heatmap-legend">
+        <span>less</span>
+        <span class="hm-cell" data-level="0"></span>
+        <span class="hm-cell" data-level="1"></span>
+        <span class="hm-cell" data-level="2"></span>
+        <span class="hm-cell" data-level="3"></span>
+        <span class="hm-cell" data-level="4"></span>
+        <span>more</span>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-title">
+        <span>🍱 Sessions</span>
+        <span id="session-total" class="goal-status"></span>
+      </div>
+      <p id="no-sessions" class="hint" hidden>no finished sessions yet — go eat some sushi! 🍣</p>
+      <div class="table-wrap">
+        <table class="admin-table" id="sessions-table">
+          <thead>
+            <tr>
+              <th>When</th>
+              <th>Sushi</th>
+              <th>Goal</th>
+              <th>Time</th>
+              <th>Sushi/min</th>
+              <th>Price</th>
+              <th>Per sushi</th>
+            </tr>
+          </thead>
+          <tbody id="sessions-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <p>your sushi data stays on this server 🏠</p>
+    </footer>
+  </main>
+
+  <script src="overview.js"></script>
+</body>
+</html>

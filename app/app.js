@@ -30,6 +30,8 @@
     goalPlus: $("goal-plus"),
     goalInput: $("goal-input"),
     goalCheer: $("goal-cheer"),
+    priceInput: $("price-input"),
+    perSushi: $("per-sushi"),
     timerDisplay: $("timer-display"),
     timerToggle: $("timer-toggle"),
     timerReset: $("timer-reset"),
@@ -41,7 +43,7 @@
   };
 
   let state = {
-    session: { count: 0, goal: 20, elapsedMs: 0 },
+    session: { count: 0, goal: 20, elapsedMs: 0, price: 0 },
     allTime: { total: 0, bestSession: 0, sessions: 0 },
   };
   let running = false;
@@ -169,17 +171,28 @@
     render();
   }
 
+  // ---- price ----
+  function setPrice(value) {
+    const n = Number(value);
+    state.session.price = Number.isFinite(n) && n > 0 ? Math.round(n * 100) / 100 : 0;
+    save();
+    render();
+  }
+
   // ---- sessions ----
-  function finishSession() {
-    if (state.session.count > 0 || elapsedMs() > 0) {
-      state.allTime.sessions += 1;
-    }
+  async function finishSession() {
+    clearTimeout(saveHandle);
+    const body = JSON.stringify(snapshot());
     running = false;
     clearInterval(tickHandle);
     els.timerToggle.textContent = "▶ Start";
-    state.session.count = 0;
-    state.session.elapsedMs = 0;
-    save({ now: true });
+    try {
+      const res = await api("/api/sessions", { method: "POST", body });
+      if (res.ok) state = await res.json();
+    } catch {
+      /* offline — state stays as-is and syncs next save */
+    }
+    els.priceInput.value = "";
     render();
     renderTime();
   }
@@ -197,6 +210,9 @@
     els.totalAllTime.textContent = state.allTime.total;
     els.bestSession.textContent = state.allTime.bestSession;
     els.sessionsCount.textContent = state.allTime.sessions;
+    const { price } = state.session;
+    els.perSushi.textContent =
+      price > 0 && count > 0 ? `${(price / count).toFixed(2)} / 🍣` : "–";
     renderSpm();
   }
 
@@ -275,6 +291,7 @@
     els.timerToggle.textContent = "▶ Start";
     els.userName.textContent = `🐟 ${me.name}`;
     els.adminLink.hidden = me.role !== "admin";
+    els.priceInput.value = state.session.price > 0 ? state.session.price : "";
     els.authScreen.hidden = true;
     els.appScreen.hidden = false;
     render();
@@ -294,6 +311,7 @@
   els.goalMinus.addEventListener("click", () => setGoal(state.session.goal - 1));
   els.goalPlus.addEventListener("click", () => setGoal(state.session.goal + 1));
   els.goalInput.addEventListener("change", (e) => setGoal(e.target.value));
+  els.priceInput.addEventListener("input", (e) => setPrice(e.target.value));
   els.newSession.addEventListener("click", finishSession);
 
   document.addEventListener("visibilitychange", () => {

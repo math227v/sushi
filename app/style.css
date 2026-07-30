@@ -438,3 +438,57 @@ body {
 }
 
 .danger-btn:hover { background: #ffd4da; }
+
+/* ---- ad libitum ---- */
+.price-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.price-input { width: 110px; }
+
+.price-hint { color: var(--ink-soft); font-size: 0.8rem; }
+
+/* ---- heatmap ---- */
+.heatmap-wrap { overflow-x: auto; }
+
+.heatmap {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  padding: 4px 0;
+}
+
+.hm-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hm-cell {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  background: #f6ecef;
+  display: inline-block;
+}
+
+.hm-cell[data-level="future"] { background: transparent; }
+.hm-cell[data-level="1"] { background: #ffd7e2; }
+.hm-cell[data-level="2"] { background: #ffb7c5; }
+.hm-cell[data-level="3"] { background: #ff8fab; }
+.hm-cell[data-level="4"] { background: #f4587e; }
+
+.hm-today { outline: 2px solid var(--pink-deep); outline-offset: 1px; }
+
+.heatmap-legend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  color: var(--ink-soft);
+  font-size: 0.75rem;
+}
+
+.heatmap-legend .hm-cell { width: 13px; height: 13px; border-radius: 4px; }

@@ -12,8 +12,11 @@ your own server.
 
 - 🍣 **Counter** — one big tappable sushi with pop animations, plus a −1 button for miscounts
 - 🎯 **Goals** — set a session goal and watch the fish swim across the progress bar
+- 💰 **Ad libitum** — enter the total price and see the live price per sushi
 - ⏱️ **Timer** — starts automatically on your first sushi; pause / reset any time
 - 📊 **Stats** — sushi per minute, all-time total, best session, session count
+- 📅 **Overview** — a 12-week day heatmap (more pink = more sushi) and a session
+  history list with count, goal, duration, sushi/min, and price per sushi
 - 🔐 **Accounts** — email + password auth via Better Auth; progress synced to the server
 - 👑 **Admin** — the **first account created becomes the admin** and gets a dashboard
   with global stats (users, total sushi, total sessions, best session ever) and a user
@@ -68,6 +71,8 @@ tests/   Playwright end-to-end tests
   `POST /api/auth/sign-out` … Better Auth endpoints under `/api/auth/*`
 - `GET /api/me` — current user (id, name, email, role)
 - `GET /api/state` / `PUT /api/state` — the signed-in user's counter state
+- `POST /api/sessions` — finish the current session (logs it to history, resets)
+- `GET /api/sessions` — the signed-in user's session history
 - `GET /api/admin/stats`, `GET /api/admin/users`,
   `DELETE /api/admin/users/:id` — admin only
 

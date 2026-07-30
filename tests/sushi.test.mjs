@@ -85,6 +85,17 @@ check("goal + button works", (await text(alice, "#goal-status")) === "2 / 3");
 await alice.click("#goal-minus");
 check("goal − button works", (await text(alice, "#goal-status")) === "2 / 2");
 
+// ---------- ad libitum ----------
+check("per-sushi shows – with no price", (await text(alice, "#per-sushi")) === "–");
+await alice.fill("#price-input", "100");
+check("price 100 / 2 sushi = 50.00", (await text(alice, "#per-sushi")) === "50.00 / 🍣");
+await alice.click("#sushi-btn");
+await alice.click("#sushi-btn");
+check("per-sushi updates as count grows (100/4)", (await text(alice, "#per-sushi")) === "25.00 / 🍣");
+await alice.click("#minus-btn");
+await alice.click("#minus-btn");
+check("per-sushi updates on minus too (100/2)", (await text(alice, "#per-sushi")) === "50.00 / 🍣");
+
 // ---------- server persistence ----------
 await alice.waitForTimeout(700); // let the debounced save flush
 await alice.reload({ waitUntil: "load" });
@@ -92,12 +103,32 @@ await alice.waitForSelector("#app-screen:not([hidden])");
 check("session survives reload (still signed in)", await alice.locator("#app-screen").isVisible());
 check("count survives reload", (await text(alice, "#count")) === "2");
 check("goal survives reload", (await text(alice, "#goal-status")) === "2 / 2");
+check("price survives reload", (await text(alice, "#per-sushi")) === "50.00 / 🍣");
 
 // ---------- new session ----------
 await alice.click("#new-session");
+await alice.waitForFunction(() => document.getElementById("count").textContent === "0");
 check("new session resets count", (await text(alice, "#count")) === "0");
 check("sessions count is 1", (await text(alice, "#sessions-count")) === "1");
 check("all-time total kept", (await text(alice, "#total-all-time")) === "2");
+check("price resets on new session", (await text(alice, "#per-sushi")) === "–");
+
+// ---------- overview page ----------
+await alice.goto(BASE + "/overview.html", { waitUntil: "load" });
+await alice.waitForSelector("#sessions-body tr");
+check("overview lists 1 finished session", (await alice.locator("#sessions-body tr").count()) === 1);
+const row = await alice.locator("#sessions-body tr").innerText();
+check("session row shows 2 sushi", row.includes("🍣\t2") || row.includes("🍣 2"), row);
+check("session row shows goal reached", row.includes("2 🎉"), row);
+check("session row shows price 100.00", row.includes("100.00"), row);
+check("session row shows per-sushi 50.00", row.includes("50.00"), row);
+const todayCell = alice.locator(".hm-cell.hm-today");
+check("heatmap marks today", (await todayCell.count()) === 1);
+check("today's heatmap cell counts 2 sushi", (await todayCell.getAttribute("data-count")) === "2");
+check("today's heatmap cell is colored", (await todayCell.getAttribute("data-level")) === "4");
+check("heatmap has 12 week columns", (await alice.locator("#heatmap .hm-col").count()) === 12);
+await alice.goto(BASE, { waitUntil: "load" });
+await alice.waitForSelector("#app-screen:not([hidden])");
 
 // ---------- second user is not admin ----------
 const bob = await newVisitor();

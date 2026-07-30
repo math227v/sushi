@@ -41,6 +41,7 @@
       <p class="tagline">itadakimasu! (๑˃̵ᴗ˂̵)</p>
       <div class="user-bar">
         <span id="user-name" class="user-name">🐟</span>
+        <a class="chip-link" href="overview.html">📅 Overview</a>
         <a id="admin-link" class="chip-link" href="admin.html" hidden>👑 Admin</a>
         <button id="sign-out" class="chip-link chip-btn">Sign out</button>
       </div>
@@ -75,6 +76,18 @@
         <button id="goal-plus" class="mini-btn" aria-label="Increase goal">+</button>
       </div>
       <p id="goal-cheer" class="goal-cheer" hidden>🎉 Goal reached! You're a sushi master! 🎉</p>
+    </section>
+
+    <!-- Ad libitum -->
+    <section class="card price-card">
+      <div class="card-title">
+        <span>💰 Ad libitum</span>
+        <span id="per-sushi" class="goal-status">–</span>
+      </div>
+      <div class="price-row">
+        <input id="price-input" class="text-input price-input" type="number" min="0" step="0.01" placeholder="0.00" aria-label="Total price" />
+        <span class="price-hint">total price → price per sushi</span>
+      </div>
     </section>
 
     <!-- Timer -->

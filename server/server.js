@@ -3,7 +3,15 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { toNodeHandler, fromNodeHeaders } from "better-auth/node";
 import { auth } from "./auth.js";
-import { getState, saveState, adminListUsers, adminGlobalStats, adminDeleteUser } from "./db.js";
+import {
+  getState,
+  saveState,
+  finishSession,
+  listSessions,
+  adminListUsers,
+  adminGlobalStats,
+  adminDeleteUser,
+} from "./db.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT) || 8080;
@@ -42,6 +50,15 @@ app.get("/api/state", requireUser, (req, res) => {
 
 app.put("/api/state", requireUser, (req, res) => {
   res.json(saveState(req.user.id, req.body));
+});
+
+// Finish the current session: logs it to the session history and resets.
+app.post("/api/sessions", requireUser, (req, res) => {
+  res.json(finishSession(req.user.id, req.body));
+});
+
+app.get("/api/sessions", requireUser, (req, res) => {
+  res.json(listSessions(req.user.id));
 });
 
 app.get("/api/admin/stats", requireUser, requireAdmin, (req, res) => {

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sushi Counter 🍣</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍣</text></svg>" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="header">
+      <h1>Sushi Counter</h1>
+      <p class="tagline">itadakimasu! (๑˃̵ᴗ˂̵)</p>
+    </header>
+
+    <!-- The big sushi button -->
+    <section class="counter-zone">
+      <button id="sushi-btn" class="sushi-btn" aria-label="Count one sushi">
+        <span class="sushi-face">🍣</span>
+      </button>
+      <div class="count-display">
+        <span id="count" class="count">0</span>
+        <span class="count-label">sushi this session</span>
+      </div>
+      <div id="pop-layer" class="pop-layer" aria-hidden="true"></div>
+    </section>
+
+    <!-- Goal -->
+    <section class="card goal-card">
+      <div class="card-title">
+        <span>🎯 Goal</span>
+        <span id="goal-status" class="goal-status">0 / 20</span>
+      </div>
+      <div class="progress-track">
+        <div id="progress-bar" class="progress-bar"></div>
+        <span id="progress-swimmer" class="progress-swimmer">🐟</span>
+      </div>
+      <div class="goal-controls">
+        <button id="goal-minus" class="mini-btn" aria-label="Decrease goal">−</button>
+        <input id="goal-input" class="goal-input" type="number" min="1" max="999" value="20" aria-label="Goal amount" />
+        <button id="goal-plus" class="mini-btn" aria-label="Increase goal">+</button>
+      </div>
+      <p id="goal-cheer" class="goal-cheer" hidden>🎉 Goal reached! You're a sushi master! 🎉</p>
+    </section>
+
+    <!-- Timer -->
+    <section class="card timer-card">
+      <div class="card-title"><span>⏱️ Timer</span></div>
+      <div id="timer-display" class="timer-display">00:00</div>
+      <div class="timer-controls">
+        <button id="timer-toggle" class="pill-btn">▶ Start</button>
+        <button id="timer-reset" class="pill-btn pill-btn--soft">↺ Reset</button>
+      </div>
+      <p class="hint">timer starts automatically on your first sushi 🐣</p>
+    </section>
+
+    <!-- Stats -->
+    <section class="card stats-card">
+      <div class="card-title"><span>📊 Stats</span></div>
+      <div class="stats-grid">
+        <div class="stat">
+          <span id="spm" class="stat-value">0.0</span>
+          <span class="stat-label">sushi / min</span>
+        </div>
+        <div class="stat">
+          <span id="total-all-time" class="stat-value">0</span>
+          <span class="stat-label">all-time total</span>
+        </div>
+        <div class="stat">
+          <span id="best-session" class="stat-value">0</span>
+          <span class="stat-label">best session</span>
+        </div>
+        <div class="stat">
+          <span id="sessions-count" class="stat-value">0</span>
+          <span class="stat-label">sessions</span>
+        </div>
+      </div>
+    </section>
+
+    <button id="new-session" class="pill-btn pill-btn--wide">🌸 Finish &amp; start new session</button>
+
+    <footer class="footer">
+      <p>data stays on your device 🏠 · made with 🍙</p>
+    </footer>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

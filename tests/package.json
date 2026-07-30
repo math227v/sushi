@@ -1,0 +1,11 @@
+{
+  "name": "sushi-counter-tests",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node sushi.test.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.56.1"
+  }
+}

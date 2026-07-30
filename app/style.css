@@ -1,0 +1,283 @@
+:root {
+  --bg: #fff7f0;
+  --card: #ffffff;
+  --ink: #5b4a54;
+  --ink-soft: #a08e99;
+  --pink: #ffb7c5;
+  --pink-deep: #ff8fab;
+  --mint: #b8e8d0;
+  --peach: #ffd9b7;
+  --lav: #e3d7ff;
+  --shadow: 0 6px 20px rgba(255, 143, 171, 0.18);
+  --radius: 22px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body { height: 100%; }
+
+body {
+  font-family: "Comic Sans MS", "Segoe UI Rounded", "Hiragino Maru Gothic ProN", "Quicksand", system-ui, sans-serif;
+  background:
+    radial-gradient(circle at 15% 20%, #ffeef3 0 12%, transparent 13%),
+    radial-gradient(circle at 85% 15%, #eafff3 0 10%, transparent 11%),
+    radial-gradient(circle at 80% 85%, #fff3e2 0 12%, transparent 13%),
+    radial-gradient(circle at 10% 80%, #f1eaff 0 10%, transparent 11%),
+    var(--bg);
+  color: var(--ink);
+  display: flex;
+  justify-content: center;
+  padding: 24px 16px 48px;
+}
+
+.app {
+  width: 100%;
+  max-width: 430px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.header { text-align: center; }
+
+.header h1 {
+  font-size: 2rem;
+  color: var(--pink-deep);
+  text-shadow: 0 2px 0 #fff;
+  letter-spacing: 1px;
+}
+
+.tagline { color: var(--ink-soft); font-size: 0.9rem; margin-top: 2px; }
+
+/* ---- big sushi button ---- */
+.counter-zone {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+}
+
+.sushi-btn {
+  width: 170px;
+  height: 170px;
+  border-radius: 50%;
+  border: 6px solid #fff;
+  background: linear-gradient(145deg, #ffe3ea, #ffd0dc);
+  box-shadow: var(--shadow), inset 0 -8px 0 rgba(255, 143, 171, 0.25);
+  font-size: 5rem;
+  cursor: pointer;
+  transition: transform 0.08s ease;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.sushi-btn:active { transform: scale(0.92); }
+
+.sushi-btn.boing { animation: boing 0.3s ease; }
+
+@keyframes boing {
+  0% { transform: scale(1); }
+  35% { transform: scale(0.88); }
+  70% { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+
+.count-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.count {
+  font-size: 3rem;
+  font-weight: bold;
+  color: var(--pink-deep);
+  line-height: 1;
+}
+
+.count-label { color: var(--ink-soft); font-size: 0.85rem; }
+
+/* floating sushi pops */
+.pop-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.pop {
+  position: absolute;
+  font-size: 1.6rem;
+  animation: floatUp 1s ease-out forwards;
+}
+
+@keyframes floatUp {
+  0%   { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
+  100% { opacity: 0; transform: translateY(-110px) scale(1.5) rotate(20deg); }
+}
+
+/* ---- cards ---- */
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.card-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: bold;
+  font-size: 1.05rem;
+}
+
+.goal-status { color: var(--pink-deep); font-size: 0.95rem; }
+
+/* progress */
+.progress-track {
+  position: relative;
+  height: 22px;
+  background: #ffeef3;
+  border-radius: 999px;
+  overflow: visible;
+}
+
+.progress-bar {
+  height: 100%;
+  width: 0%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--mint), var(--pink));
+  transition: width 0.35s ease;
+}
+
+.progress-swimmer {
+  position: absolute;
+  top: 50%;
+  left: 0%;
+  transform: translate(-50%, -55%) scaleX(-1);
+  font-size: 1.1rem;
+  transition: left 0.35s ease;
+}
+
+.goal-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.mini-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: var(--lav);
+  color: var(--ink);
+  font-size: 1.2rem;
+  cursor: pointer;
+  box-shadow: 0 3px 0 rgba(91, 74, 84, 0.12);
+}
+
+.mini-btn:active { transform: translateY(2px); box-shadow: none; }
+
+.goal-input {
+  width: 72px;
+  text-align: center;
+  font-size: 1.1rem;
+  font-family: inherit;
+  color: var(--ink);
+  border: 2px solid var(--pink);
+  border-radius: 12px;
+  padding: 6px 4px;
+  background: #fffafc;
+}
+
+.goal-input:focus { outline: 3px solid var(--peach); }
+
+.goal-cheer {
+  text-align: center;
+  color: var(--pink-deep);
+  font-weight: bold;
+  animation: wiggle 0.6s ease infinite alternate;
+}
+
+@keyframes wiggle {
+  from { transform: rotate(-1.5deg) scale(1); }
+  to   { transform: rotate(1.5deg) scale(1.04); }
+}
+
+/* ---- timer ---- */
+.timer-display {
+  text-align: center;
+  font-size: 2.6rem;
+  font-weight: bold;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 2px;
+}
+
+.timer-controls {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.pill-btn {
+  border: none;
+  background: var(--pink);
+  color: #fff;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: bold;
+  padding: 10px 22px;
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow: 0 4px 0 rgba(255, 143, 171, 0.45);
+  transition: transform 0.08s ease;
+}
+
+.pill-btn:active { transform: translateY(3px); box-shadow: none; }
+
+.pill-btn--soft {
+  background: var(--mint);
+  box-shadow: 0 4px 0 rgba(120, 190, 160, 0.45);
+  color: #4c7a63;
+}
+
+.pill-btn--wide { width: 100%; background: var(--peach); color: #9a6b3f; box-shadow: 0 4px 0 rgba(220, 170, 110, 0.45); }
+
+.hint { text-align: center; color: var(--ink-soft); font-size: 0.78rem; }
+
+/* ---- stats ---- */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.stat {
+  background: #fffafc;
+  border: 2px dashed #ffd7e2;
+  border-radius: 16px;
+  padding: 12px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--pink-deep);
+}
+
+.stat-label { font-size: 0.75rem; color: var(--ink-soft); }
+
+.footer { text-align: center; color: var(--ink-soft); font-size: 0.75rem; }

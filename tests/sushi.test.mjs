@@ -127,6 +127,32 @@ check("heatmap marks today", (await todayCell.count()) === 1);
 check("today's heatmap cell counts 2 sushi", (await todayCell.getAttribute("data-count")) === "2");
 check("today's heatmap cell is colored", (await todayCell.getAttribute("data-level")) === "4");
 check("heatmap has 12 week columns", (await alice.locator("#heatmap .hm-col").count()) === 12);
+
+// ---------- reopen session ----------
+const reopenBtn = alice.locator("#sessions-body .reopen-btn");
+check("fresh session shows a reopen button", (await reopenBtn.count()) === 1);
+await reopenBtn.click();
+await alice.waitForURL("**/index.html");
+await alice.waitForSelector("#app-screen:not([hidden])");
+check("reopen restores the count", (await text(alice, "#count")) === "2");
+check("reopen restores the price (100/2)", (await text(alice, "#per-sushi")) === "50.00 / 🍣");
+check("reopen rolls back the session counter", (await text(alice, "#sessions-count")) === "0");
+
+// finish it again and check the guards
+await alice.click("#new-session");
+await alice.waitForFunction(() => document.getElementById("count").textContent === "0");
+check("re-finishing works after reopen", (await text(alice, "#sessions-count")) === "1");
+const logged = await (await alice.request.get(BASE + "/api/sessions")).json();
+await alice.click("#sushi-btn"); // start a new live session
+await alice.waitForTimeout(700);
+const conflict = await alice.request.post(`${BASE}/api/sessions/${logged[0].id}/reopen`, { data: {} });
+check("reopen blocked while a new session is live (409)", conflict.status() === 409, `got ${conflict.status()}`);
+await alice.click("#minus-btn");
+await alice.click("#timer-reset");
+await alice.waitForTimeout(700);
+const missing = await alice.request.post(`${BASE}/api/sessions/999999/reopen`, { data: {} });
+check("reopening an unknown session gives 404", missing.status() === 404, `got ${missing.status()}`);
+
 await alice.goto(BASE, { waitUntil: "load" });
 await alice.waitForSelector("#app-screen:not([hidden])");
 

@@ -8,6 +8,7 @@ import {
   saveState,
   finishSession,
   listSessions,
+  reopenSession,
   adminListUsers,
   adminGlobalStats,
   adminDeleteUser,
@@ -57,8 +58,27 @@ app.post("/api/sessions", requireUser, (req, res) => {
   res.json(finishSession(req.user.id, req.body));
 });
 
+// How long a finished session stays reopenable (default: 1 hour).
+const REOPEN_WINDOW_MS = (Number(process.env.REOPEN_WINDOW_MINUTES) || 60) * 60 * 1000;
+
 app.get("/api/sessions", requireUser, (req, res) => {
-  res.json(listSessions(req.user.id));
+  const now = Date.now();
+  res.json(
+    listSessions(req.user.id).map((s) => ({
+      ...s,
+      reopenable: now - new Date(s.finishedAt).getTime() <= REOPEN_WINDOW_MS,
+    }))
+  );
+});
+
+app.post("/api/sessions/:id/reopen", requireUser, (req, res) => {
+  const result = reopenSession(req.user.id, Number(req.params.id), REOPEN_WINDOW_MS);
+  if (result.error === "not_found") return res.status(404).json({ error: "session not found" });
+  if (result.error === "expired") return res.status(410).json({ error: "too old to reopen" });
+  if (result.error === "live_session") {
+    return res.status(409).json({ error: "finish your current session first" });
+  }
+  res.json(result.state);
 });
 
 app.get("/api/admin/stats", requireUser, requireAdmin, (req, res) => {

@@ -167,6 +167,32 @@ export const finishSession = db.transaction((userId, body) => {
   return getState(userId);
 });
 
+// Reopen a recently finished session: remove it from the log and make it the
+// live session again. Refuses when the log entry is too old or a new session
+// has already been started. Atomic.
+export const reopenSession = db.transaction((userId, sessionId, windowMs) => {
+  const row = db
+    .prepare("SELECT id, count, goal, elapsedMs, price, finishedAt FROM session_log WHERE id = ? AND userId = ?")
+    .get(sessionId, userId);
+  if (!row) return { error: "not_found" };
+  if (Date.now() - new Date(row.finishedAt).getTime() > windowMs) return { error: "expired" };
+  const cur = getState(userId);
+  if (cur.session.count > 0 || cur.session.elapsedMs > 0) return { error: "live_session" };
+  db.prepare("DELETE FROM session_log WHERE id = ?").run(row.id);
+  upsertState.run({
+    userId,
+    count: row.count,
+    goal: row.goal,
+    elapsedMs: row.elapsedMs,
+    price: row.price,
+    total: cur.allTime.total,
+    bestSession: cur.allTime.bestSession,
+    sessions: Math.max(0, cur.allTime.sessions - 1),
+    updatedAt: new Date().toISOString(),
+  });
+  return { state: getState(userId) };
+});
+
 export function listSessions(userId) {
   return db
     .prepare(`

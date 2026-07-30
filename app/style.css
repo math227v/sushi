@@ -439,6 +439,22 @@ body {
 
 .danger-btn:hover { background: #ffd4da; }
 
+.reopen-btn {
+  border: none;
+  font-family: inherit;
+  font-weight: bold;
+  font-size: 0.78rem;
+  color: #4c7a63;
+  background: var(--mint);
+  border-radius: 999px;
+  padding: 4px 12px;
+  cursor: pointer;
+  box-shadow: 0 2px 0 rgba(120, 190, 160, 0.45);
+}
+
+.reopen-btn:active { transform: translateY(2px); box-shadow: none; }
+.reopen-btn:disabled { opacity: 0.5; cursor: default; }
+
 /* ---- ad libitum ---- */
 .price-row {
   display: flex;

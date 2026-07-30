@@ -104,8 +104,35 @@
         td.textContent = text;
         tr.appendChild(td);
       }
+      const actionTd = document.createElement("td");
+      if (s.reopenable) {
+        const btn = document.createElement("button");
+        btn.className = "reopen-btn";
+        btn.textContent = "↩ Reopen";
+        btn.title = "Continue this session";
+        btn.addEventListener("click", () => reopen(s.id, btn));
+        actionTd.appendChild(btn);
+      }
+      tr.appendChild(actionTd);
       body.appendChild(tr);
     }
+  }
+
+  async function reopen(id, btn) {
+    btn.disabled = true;
+    const res = await fetch(`/api/sessions/${id}/reopen`, {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: "{}",
+    });
+    if (res.ok) {
+      window.location.href = "index.html";
+      return;
+    }
+    const data = await res.json().catch(() => ({}));
+    alert(data.error || "Could not reopen this session 🥺");
+    btn.disabled = false;
   }
 
   load();

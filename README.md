@@ -17,6 +17,8 @@ your own server.
 - 📊 **Stats** — sushi per minute, all-time total, best session, session count
 - 📅 **Overview** — a 12-week day heatmap (more pink = more sushi) and a session
   history list with count, goal, duration, sushi/min, and price per sushi
+- ↩️ **Reopen** — finished a session too soon? Reopen it from the overview within
+  an hour (configurable via `REOPEN_WINDOW_MINUTES`) and keep counting
 - 🔐 **Accounts** — email + password auth via Better Auth; progress synced to the server
 - 👑 **Admin** — the **first account created becomes the admin** and gets a dashboard
   with global stats (users, total sushi, total sessions, best session ever) and a user
@@ -46,6 +48,7 @@ docker run -d -p 8080:8080 -v sushi-data:/data sushi-counter
 | `BETTER_AUTH_SECRET` | auto-generated, stored next to the DB | session signing secret |
 | `BETTER_AUTH_URL` | `http://localhost:8080` | public origin of the app |
 | `TRUSTED_ORIGINS` | `http://localhost:8080` | comma-separated allowed origins |
+| `REOPEN_WINDOW_MINUTES` | `60` | how long finished sessions stay reopenable |
 
 If you serve the app on anything other than `http://localhost:8080`, set
 `BETTER_AUTH_URL` and `TRUSTED_ORIGINS` to that origin.
@@ -73,6 +76,7 @@ tests/   Playwright end-to-end tests
 - `GET /api/state` / `PUT /api/state` — the signed-in user's counter state
 - `POST /api/sessions` — finish the current session (logs it to history, resets)
 - `GET /api/sessions` — the signed-in user's session history
+- `POST /api/sessions/:id/reopen` — restore a recent session as the live one
 - `GET /api/admin/stats`, `GET /api/admin/users`,
   `DELETE /api/admin/users/:id` — admin only
 

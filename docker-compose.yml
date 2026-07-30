@@ -2,16 +2,11 @@ services:
   sushi-counter:
     build: .
     ports:
-      - "8080:8080"
+      - "${PORT:-8080}:${PORT:-8080}"
     volumes:
       - sushi-data:/data
-    environment:
-      # Optional: pin a secret (otherwise one is generated and stored in /data).
-      # BETTER_AUTH_SECRET: change-me-to-a-long-random-string
-      # Set these if you serve the app from a different origin:
-      # BETTER_AUTH_URL: http://localhost:8080
-      # TRUSTED_ORIGINS: http://localhost:8080
-      NODE_ENV: production
+    env_file:
+      - .env
     restart: unless-stopped
 
 volumes:

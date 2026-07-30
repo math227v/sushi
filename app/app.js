@@ -115,8 +115,10 @@
     if (!running) startTimer(); // timer starts on first sushi
     spawnPop();
     els.sushiBtn.classList.remove("boing");
-    void els.sushiBtn.offsetWidth; // restart animation
+    els.count.classList.remove("pop-count");
+    void els.sushiBtn.offsetWidth; // restart animations
     els.sushiBtn.classList.add("boing");
+    els.count.classList.add("pop-count");
     save();
     render();
   }

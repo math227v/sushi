@@ -91,13 +91,24 @@ body {
 }
 
 .count {
-  font-size: 3rem;
+  font-size: 6.5rem;
   font-weight: bold;
   color: var(--pink-deep);
   line-height: 1;
+  text-shadow:
+    0 4px 0 #fff,
+    0 6px 14px rgba(255, 143, 171, 0.35);
 }
 
-.count-label { color: var(--ink-soft); font-size: 0.85rem; }
+.count.pop-count { animation: countPop 0.25s ease; }
+
+@keyframes countPop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+
+.count-label { color: var(--ink-soft); font-size: 1rem; }
 
 /* floating sushi pops */
 .pop-layer {

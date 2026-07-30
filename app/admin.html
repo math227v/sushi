@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin · Sushi Counter 👑</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>👑</text></svg>" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app app--wide">
+    <header class="header">
+      <h1>👑 Admin</h1>
+      <p class="tagline">sushi command center</p>
+      <div class="user-bar">
+        <a class="chip-link" href="index.html">← back to counting</a>
+      </div>
+    </header>
+
+    <p id="admin-denied" class="auth-error" hidden>Admins only — go eat some sushi instead 🍣</p>
+
+    <section id="admin-content" hidden>
+      <section class="card stats-card">
+        <div class="card-title"><span>🌍 Global stats</span></div>
+        <div class="stats-grid">
+          <div class="stat">
+            <span id="g-users" class="stat-value">0</span>
+            <span class="stat-label">users</span>
+          </div>
+          <div class="stat">
+            <span id="g-total" class="stat-value">0</span>
+            <span class="stat-label">total sushi</span>
+          </div>
+          <div class="stat">
+            <span id="g-sessions" class="stat-value">0</span>
+            <span class="stat-label">total sessions</span>
+          </div>
+          <div class="stat">
+            <span id="g-best" class="stat-value">0</span>
+            <span class="stat-label">best session ever</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="card users-card">
+        <div class="card-title"><span>🐟 Users</span></div>
+        <div class="table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>All-time</th>
+                <th>Best</th>
+                <th>Sessions</th>
+                <th>Joined</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="users-body"></tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+
+    <footer class="footer">
+      <p>your sushi data stays on this server 🏠</p>
+    </footer>
+  </main>
+
+  <script src="admin.js"></script>
+</body>
+</html>

@@ -8,10 +8,42 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <main class="app">
+  <!-- ===== auth screen ===== -->
+  <main id="auth-screen" class="app auth-screen" hidden>
     <header class="header">
       <h1>Sushi Counter</h1>
       <p class="tagline">itadakimasu! (๑˃̵ᴗ˂̵)</p>
+    </header>
+    <div class="auth-sushi">🍣</div>
+    <section class="card auth-card">
+      <div class="auth-tabs">
+        <button id="tab-signin" class="auth-tab active">Sign in</button>
+        <button id="tab-signup" class="auth-tab">Sign up</button>
+      </div>
+      <form id="auth-form" class="auth-form">
+        <input id="auth-name" class="text-input" type="text" placeholder="your name" autocomplete="name" hidden />
+        <input id="auth-email" class="text-input" type="email" placeholder="email" autocomplete="email" required />
+        <input id="auth-password" class="text-input" type="password" placeholder="password (min 8 chars)" autocomplete="current-password" required minlength="8" />
+        <button id="auth-submit" class="pill-btn pill-btn--wide" type="submit">Sign in 🍜</button>
+        <p id="auth-error" class="auth-error" hidden></p>
+      </form>
+      <p class="hint">the first account created becomes the admin 👑</p>
+    </section>
+    <footer class="footer">
+      <p>your sushi data stays on this server 🏠 · made with 🍙</p>
+    </footer>
+  </main>
+
+  <!-- ===== app screen ===== -->
+  <main id="app-screen" class="app" hidden>
+    <header class="header">
+      <h1>Sushi Counter</h1>
+      <p class="tagline">itadakimasu! (๑˃̵ᴗ˂̵)</p>
+      <div class="user-bar">
+        <span id="user-name" class="user-name">🐟</span>
+        <a id="admin-link" class="chip-link" href="admin.html" hidden>👑 Admin</a>
+        <button id="sign-out" class="chip-link chip-btn">Sign out</button>
+      </div>
     </header>
 
     <!-- The big sushi button -->
@@ -23,6 +55,7 @@
         <span id="count" class="count">0</span>
         <span class="count-label">sushi this session</span>
       </div>
+      <button id="minus-btn" class="minus-btn" aria-label="Remove one sushi">−1</button>
       <div id="pop-layer" class="pop-layer" aria-hidden="true"></div>
     </section>
 
@@ -81,7 +114,7 @@
     <button id="new-session" class="pill-btn pill-btn--wide">🌸 Finish &amp; start new session</button>
 
     <footer class="footer">
-      <p>data stays on your device 🏠 · made with 🍙</p>
+      <p>your sushi data stays on this server 🏠 · made with 🍙</p>
     </footer>
   </main>
 

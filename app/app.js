@@ -1,13 +1,26 @@
-/* Sushi Counter — all data lives in localStorage, nothing leaves the device. */
+/* Sushi Counter — progress is stored per-user on the server (SQLite via Better Auth sessions). */
 (() => {
   "use strict";
 
-  const STORAGE_KEY = "sushi-counter-v1";
   const POP_EMOJI = ["🍣", "🍤", "🍙", "🥢", "🍥", "🥟", "🍚", "✨"];
 
   const $ = (id) => document.getElementById(id);
   const els = {
+    authScreen: $("auth-screen"),
+    appScreen: $("app-screen"),
+    tabSignin: $("tab-signin"),
+    tabSignup: $("tab-signup"),
+    authForm: $("auth-form"),
+    authName: $("auth-name"),
+    authEmail: $("auth-email"),
+    authPassword: $("auth-password"),
+    authSubmit: $("auth-submit"),
+    authError: $("auth-error"),
+    userName: $("user-name"),
+    adminLink: $("admin-link"),
+    signOut: $("sign-out"),
     sushiBtn: $("sushi-btn"),
+    minusBtn: $("minus-btn"),
     count: $("count"),
     popLayer: $("pop-layer"),
     goalStatus: $("goal-status"),
@@ -27,38 +40,44 @@
     newSession: $("new-session"),
   };
 
-  const defaultState = () => ({
+  let state = {
     session: { count: 0, goal: 20, elapsedMs: 0 },
     allTime: { total: 0, bestSession: 0, sessions: 0 },
-  });
-
-  let state = load();
-  // Timer runtime (not persisted as "running" — a reload resumes paused).
+  };
   let running = false;
-  let startedAt = 0; // performance-independent wall clock anchor while running
+  let startedAt = 0;
   let tickHandle = null;
+  let saveHandle = null;
 
-  function load() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return defaultState();
-      const parsed = JSON.parse(raw);
-      const base = defaultState();
-      return {
-        session: { ...base.session, ...(parsed.session || {}) },
-        allTime: { ...base.allTime, ...(parsed.allTime || {}) },
-      };
-    } catch {
-      return defaultState();
-    }
+  const api = (path, opts = {}) =>
+    fetch(path, {
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      ...opts,
+    });
+
+  // ---- server sync ----
+  function snapshot() {
+    return {
+      session: { ...state.session, elapsedMs: elapsedMs() },
+      allTime: { ...state.allTime },
+    };
   }
 
-  function save() {
-    state.session.elapsedMs = elapsedMs();
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    } catch {
-      /* storage full or blocked — the app still works for this session */
+  function save({ now = false } = {}) {
+    clearTimeout(saveHandle);
+    if (now) {
+      const body = JSON.stringify(snapshot());
+      // keepalive lets the request finish even when the tab is closing
+      fetch("/api/state", {
+        method: "PUT",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body,
+        keepalive: true,
+      }).catch(() => {});
+    } else {
+      saveHandle = setTimeout(() => save({ now: true }), 500);
     }
   }
 
@@ -123,6 +142,14 @@
     render();
   }
 
+  function removeSushi() {
+    if (state.session.count === 0) return;
+    state.session.count -= 1;
+    state.allTime.total = Math.max(0, state.allTime.total - 1);
+    save();
+    render();
+  }
+
   function spawnPop() {
     const pop = document.createElement("span");
     pop.className = "pop";
@@ -152,7 +179,7 @@
     els.timerToggle.textContent = "▶ Start";
     state.session.count = 0;
     state.session.elapsedMs = 0;
-    save();
+    save({ now: true });
     render();
     renderTime();
   }
@@ -181,12 +208,87 @@
   function renderSpm() {
     const minutes = elapsedMs() / 60000;
     const spm = minutes > 0 ? state.session.count / minutes : 0;
-    // Cap silly values from sub-second sessions so the display stays readable.
     els.spm.textContent = (Math.min(spm, 999) || 0).toFixed(1);
   }
 
+  // ---- auth ----
+  let mode = "signin";
+
+  function setMode(next) {
+    mode = next;
+    els.tabSignin.classList.toggle("active", mode === "signin");
+    els.tabSignup.classList.toggle("active", mode === "signup");
+    els.authName.hidden = mode === "signin";
+    els.authName.required = mode === "signup";
+    els.authPassword.autocomplete = mode === "signin" ? "current-password" : "new-password";
+    els.authSubmit.textContent = mode === "signin" ? "Sign in 🍜" : "Create account 🍱";
+    els.authError.hidden = true;
+  }
+
+  async function submitAuth(e) {
+    e.preventDefault();
+    els.authError.hidden = true;
+    els.authSubmit.disabled = true;
+    try {
+      const endpoint = mode === "signin" ? "/api/auth/sign-in/email" : "/api/auth/sign-up/email";
+      const body = {
+        email: els.authEmail.value.trim(),
+        password: els.authPassword.value,
+      };
+      if (mode === "signup") body.name = els.authName.value.trim();
+      const res = await api(endpoint, { method: "POST", body: JSON.stringify(body) });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message || "That didn't work — check your details 🥺");
+      }
+      await enterApp();
+    } catch (err) {
+      els.authError.textContent = err.message;
+      els.authError.hidden = false;
+    } finally {
+      els.authSubmit.disabled = false;
+    }
+  }
+
+  async function signOut() {
+    save({ now: true });
+    await api("/api/auth/sign-out", { method: "POST", body: "{}" }).catch(() => {});
+    running = false;
+    clearInterval(tickHandle);
+    showAuth();
+  }
+
+  function showAuth() {
+    els.appScreen.hidden = true;
+    els.authScreen.hidden = false;
+  }
+
+  async function enterApp() {
+    const meRes = await api("/api/me");
+    if (!meRes.ok) return showAuth();
+    const me = await meRes.json();
+    const stateRes = await api("/api/state");
+    if (!stateRes.ok) return showAuth();
+    state = await stateRes.json();
+    running = false;
+    clearInterval(tickHandle);
+    els.timerToggle.textContent = "▶ Start";
+    els.userName.textContent = `🐟 ${me.name}`;
+    els.adminLink.hidden = me.role !== "admin";
+    els.authScreen.hidden = true;
+    els.appScreen.hidden = false;
+    render();
+    renderTime();
+  }
+
   // ---- wire up ----
+  els.tabSignin.addEventListener("click", () => setMode("signin"));
+  els.tabSignup.addEventListener("click", () => setMode("signup"));
+  els.authForm.addEventListener("submit", submitAuth);
+  els.signOut.addEventListener("click", signOut);
+
   els.sushiBtn.addEventListener("click", addSushi);
+  els.minusBtn.addEventListener("click", removeSushi);
   els.timerToggle.addEventListener("click", () => (running ? pauseTimer() : startTimer()));
   els.timerReset.addEventListener("click", resetTimer);
   els.goalMinus.addEventListener("click", () => setGoal(state.session.goal - 1));
@@ -194,12 +296,13 @@
   els.goalInput.addEventListener("change", (e) => setGoal(e.target.value));
   els.newSession.addEventListener("click", finishSession);
 
-  // Persist the ticking clock when the tab hides or closes.
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "hidden") save();
+    if (document.visibilityState === "hidden" && !els.appScreen.hidden) save({ now: true });
   });
-  window.addEventListener("pagehide", save);
+  window.addEventListener("pagehide", () => {
+    if (!els.appScreen.hidden) save({ now: true });
+  });
 
-  render();
-  renderTime();
+  setMode("signin");
+  enterApp(); // shows the auth screen if there is no session
 })();
